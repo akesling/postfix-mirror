@@ -1,0 +1,66 @@
+This is the Postfix 3.5 (experimental) release.
+
+The stable Postfix release is called postfix-3.4.x where 3=major
+release number, 4=minor release number, x=patchlevel.  The stable
+release never changes except for patches that address bugs or
+emergencies. Patches change the patchlevel and the release date.
+
+New features are developed in snapshot releases. These are called
+postfix-3.5-yyyymmdd where yyyymmdd is the release date (yyyy=year,
+mm=month, dd=day).  Patches are never issued for snapshot releases;
+instead, a new snapshot is released.
+
+The mail_release_date configuration parameter (format: yyyymmdd)
+specifies the release date of a stable release or snapshot release.
+
+If you upgrade from Postfix 3.3 or earlier, read RELEASE_NOTES-3.4
+before proceeding.
+
+License change
+---------------
+
+This software is distributed with a dual license: in addition to the
+historical IBM Public License 1.0, it is now also distributed with the
+more recent Eclipse Public License 2.0. Recipients can choose to take
+the software under the license of their choice. Those who are more
+comfortable with the IPL can continue with that license.
+
+Major changes with snapshot 20190517
+====================================
+
+Search order support for check_ccert_access. Search order support
+for other tables is in design (canonical_maps, virtual_alias_maps,
+transport_maps, etc.).
+
+The following check_ccert_access setting uses the built-in search
+order: it first looks up the client certificate fingerprint, then
+the client certificate public-key fingerprint, and it stops when a
+decision is made.
+
+/etc/postfix/main.cf:
+    smtpd_mumble_restrictions =
+        ...
+        check_ccert_access hash:/etc/postfix/ccert-access
+        ...
+
+The following setting, with explicit search order, produces the
+exact same result:
+
+/etc/postfix/main.cf:
+    smtpd_mumble_restrictions =
+        ...
+        check_ccert_access {
+            hash:/etc/postfix/ccert-access {
+                search_order = cert_fingerprint, pubkey_fingerprint } }
+        ...
+
+The check_ccert_access search order also supports the subject and
+issuer properties. Support is planned for rfc822name and smtputf8mailbox.
+
+Incompatibility with snapshot 20190427
+======================================
+
+Postfix now normalizes IP addresses received with XCLIENT, XFORWARD,
+or with the HaProxy protocol, for consistency with direct connections
+to Postfix. This may change the appearance of logging, and the way
+that check_client_access will match subnets of an IPv6 address.
